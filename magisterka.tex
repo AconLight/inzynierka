@@ -1,0 +1,846 @@
+\documentclass[12pt]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage[section]{placeins}
+ \usepackage{wrapfig} 
+ \usepackage{caption}
+\usepackage{subcaption}
+\usepackage{gensymb}
+\usepackage[section]{placeins}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{listings}
+
+\graphicspath{ {images/} }
+%\usepackage[polish]{babel}
+\usepackage{enumitem}
+\usepackage{blindtext}
+\usepackage{tocloft}
+\renewcommand{\chaptername}{Rozdział}
+\renewcommand{\contentsname}{Spis treści}
+\renewcommand{\figurename}{Rys.}
+\renewcommand{\tablename}{Tab.}
+\newcommand{\codename}{Kod }
+
+\renewcommand{\listfigurename}{Spis rysunków}
+
+\newcommand{\listequationsname}{Lista równań.}
+\newlistof{myequations}{equ}{\listequationsname}
+\newcommand{\myequations}[1]{%
+\addcontentsline{equ}{myequations}{\protect\numberline{\theequation}#1}\par}
+\setlength{\cftmyequationsnumwidth}{2.5em}% Width of equation number in List of Equations
+
+
+
+    \renewcommand{\lstlistingname}{Kod}
+    \renewcommand{\lstlistlistingname}{Lista kodów.}
+    \renewcommand{\bibname}{Bibliografia}
+\pagestyle{headings}
+
+\setlength{\textwidth}{14cm}
+\setlength{\textheight}{20cm}
+
+\newtheorem{definition}{Definicja} % przykład nowego środowiska 
+\newtheorem{example}{Przykład}[chapter] % przykład nowego środowiska 
+\newtheorem{corollary}{Wniosek}[chapter] % przykład nowego środowiska 
+
+%%%%%%%%%%%%%%
+\usepackage{color}
+\definecolor{bluekeywords}{rgb}{0.13,0.13,1}
+\definecolor{greencomments}{rgb}{0,0.5,0}
+\definecolor{redstrings}{rgb}{0.9,0,0}
+
+\lstset{language=[Sharp]C,
+showspaces=false,
+showtabs=false,
+breaklines=true,
+postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookrightarrow\space}},
+showstringspaces=false,
+breakatwhitespace=true,
+escapeinside={(*@}{@*)},
+commentstyle=\color{greencomments},
+keywordstyle=\color{bluekeywords}\bfseries,
+stringstyle=\color{redstrings},
+basicstyle=\ttfamily,
+  frame=single
+}
+%%%%%%%%%%%%%
+
+\begin{document}
+\tableofcontents	% generuje spis treści ze stronami !!!
+\begin{sloppypar}
+\chapter{Wstęp} \label{rozdz.wstep} 
+Człowiek od wielu lat próbuje naśladować działalność natury. Wynikiem tych prób są między innymi opisy zjawisk przyrodniczych przy pomocy równań matematycznych. Ludzie stosują tego rodzaju wzory przy  przewidywaniu pogody, symulacji rozwoju roślin, tworzenia płatków śniegu czy błyskawic.\\W grafice komputerowej często wykorzystuje się struktury o budowie fraktalnej generowane przez przyrodę, które w prosty sposób mogą być opisane za pomocą wzorów matematycznych.
+\newline\newline
+Jednym z takich przełożeń jest System Lindenmayera. Pozwala on zamienić równania matematyczne na charakterystyczny wygląd oraz zachowanie danej rośliny. System ten jest ściśle związany z lingwistyką matematyczną i jest możliwy do zaimplementowania w dowolnym języku programowania, lub stworzeniu z Systemu Lindermayera osobnego języka programowania. 
+
+
+\section{Cel, założenia i zakres pracy}
+Niniejsza praca dotyczy zakresu grafiki komputerowej i skupia się na implementacji oraz wykorzystaniu Systemu Lindermayera w tworzeniu roślinności \\o budowie fraktalnej a w szczególności tworzeniu samej siatki trójkątnej opisującej trójwymiarowy model. 
+
+Celem pracy jest zbadanie możliwości Systemów Lindermayera po kątem kreowania drzew w silniku Unity5 oraz sposoby ich edycji.
+Praca praktyczna została stworzona w silniku gier Unity5\cite{unity}. Silnik ten wspiera tworzenie oprogramowania interaktywnego dla ponad 20 platform w tym dla hełmów rzeczywistości wirtualnej takich jak OculusRift czy SamsungGearVR, konsol siódmej i ósmej generacji takich jak PlayStation3, Xbox 360, Nintendo Wii U oraz urządeń przenośnych z systemami IOs, Android czy Windows. Tworzenie gier i aplikacji jest darmowe, płatne jest za to zmiana ekranu ładowania oraz możliwość szybszej komunikacji z developerami w razie błędów spowodowanych kodem silnika. Unity posiada także własny sklep w którym można kupować stworzone przez innych użytkowników silnika komponenty rozszerzające możliwości aplikacji, modele lub dźwięki. Możliwości rozszerzania silnika są ogromne. Developerzy udostępnili interfejsy dzięki którym możemy tworzyć własne rozszerzenia zintegrowane z głównym edytorem Unity. Programowanie odbywa się za pomocą języka $C\#$ udostępnionego jako wolne oprogramowanie za pomocą projektu Mono\cite{mono}.
+
+Praca ta ma na celu stworzenie technologi do kreowania modeli drzew prosto w silniku Unity5, bez potrzeby używania zewnętrznego oprogramowania do modelowania 3D. Prostota użytkowania oraz minimalistyczny interfejs Unity5 był jedną z cech dzięki którym silnik ten został wybrany.
+
+Praca została podzielona na cześć praktyczną oraz teoretyczną. W części teoretycznej została przybliżona idea L-systemów oraz jego rodzaje, sposób zamiany słów na geometrie przestrzenną oraz opisana teoria matematyczna dotycząca krzywych B-sklejanych. W następnych podrozdziałach zostały scharakteryzowane istniejące rozwiązania oraz algorytmy SpaceColonization, który działa na innej zasadzie lecz jego wynikiem jest trójwymiarowy model drzewa.
+Cześć praktyczna opiewa sposób implementacji, opisując wykorzystane metody oraz przykłady kodu z implementacji. Potwierdzeniem działania stworzonego programu są modele wykreowane przez algorytm znajdujące się w części \textit{Przykłady}. Każdy wynik został krótko scharakteryzowany pod kątem ilości wierzchołków, długości słowa oraz liczbę wygenerowanych gałęzi.
+
+\chapter{System Lindermayera} \label{rozdz.L-system} 
+
+\section{Fraktal}
+Struktury fraktalne znane są ludzkości od lat, jednak samą definicję tego słowa przedstawił w latach siedemdziesiątych Benoi Mandelbrot. Z łaciny słowo to oznacza \textit{pęknięty} bądź \textit{zepsuty}. Na \figurename\ref{fig:fraktal1} został przedstawiony fraktal Mandelbrota.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.2]{fraktal1} 
+\caption{Fraktal Mandelbrota \label{fig:fraktal1}}
+
+\end{figure}
+
+
+Jedną z najważniejszych cech fraktala jest tak zwane \textit{samopodobieństwo}. Oznacza to że każda część fraktala jest podobna do całości i można ją uzyskać poprzez rekurencyjne wywoływanie prostego wzoru, opisującego dany fraktal.
+Po latach obserwacji roślin wysnuto wniosek iż można zapisać ogólny wzór matematyczny opisujący dany gatunek flory. Dzięki tym badaniom możemy teraz, w przybliżony sposób opisać budowę rośliny czy jej rozwój w bardzo prosty sposób.\\
+Jako że rośliny są strukturami bardzo skomplikowanymi z dużą ilością elementów i nie jesteśmy w stanie stworzyć jego modelu przy użyciu programów do modelowania, zostało przedstawione inne podejście.\\
+ Traktując rośliny jako struktury fraktalne składające się z dużej ilości samo-podobnych elementów jesteśmy w stanie wygenerować taką roślinę przy pomocy Systemów Lindermayera. 
+Większość cech flory może zostać przedstawiona jako czynniki we wzorze i swobodnie zmieniane do uzyskania oczekiwanego efektu. Na \figurename	\ref{konwalia:L}, \ref{konwalia:N}, \ref{slon:L}, \ref{slon:N} zostały przedstawione przykłady zestawienia wygenerowanych roślinności fraktalnych ze zdjęciami roślin na podstawie których fraktale zostały stworzone.
+
+\begin{figure}[!htp]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{lilL}
+  \caption{Konwalia wygenerowana z L-systemu.\cite{prusinABOP}}
+  \label{konwalia:L}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{konwalia}
+  \caption{Zdjęcie konwali.\cite{konw}}  \label{konwalia:N}
+\end{subfigure}
+\caption{Porównanie konwali.}
+\label{fig:test}
+\end{figure}
+\begin{figure}[!htp]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{slonL}
+  \caption{Słonecznik wygenerowany z L-systemu.\cite{prusinABOP}}
+  \label{slon:L}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{slonN}
+  \caption{Zdjęcie słonecznika.\cite{slon}}  \label{slon:N}
+\end{subfigure}
+\caption{Porównanie słonecznika.}
+\label{fig:test}
+\end{figure}
+\section{System Lindermayera}
+
+System ten został stworzony przez Aristida Lindermayera w 1968 roku jako teoretyczny opis rozwoju wielokomórkowych organizmów a potem konsekwentnie stosowany do badania roślin oraz ich organów. Przy szybkim rozwoju grafiki komputerowej reguły te zostały zastosowane do graficznego opisu rozwoju roślin celem realistycznej wizualizacji modeli oraz symulacji zachowań flory. 
+
+
+
+
+\subsection{DOL-system}
+DOL system (ang. Deterministic and context free L-systems) jest systemem deterministycznym oraz bezkontekstowym. Oznacza to że dla jednej litery istnieje dokładnie jedna reguła oraz kolejność liter w przetwarzanym słowie nie ma wpływy na wykonywane reguły.
+Rozważmy przypadek gdzie mamy słowa stworzone za pomocą liter \textit{a} oraz \textit{b}. Każda litera jest powiązana\\z pewną reguła. Reguła \textit{a $\rightarrow $ ab} oznacza że każda litera \textit{a} zostaje zamieniona na słowo \textit{ab}, a reguła \textit{b $\rightarrow $ a} oznacza że litera \textit{b} zostaje zamieniona na literę \textit{a}. Dzięki temu słowo \textit{ab} generuje \textit{aba} potem \textit{abaab} kontynuując aż do osiągnięcia założonej ilości iteracji(\figurename \ref{fig:DOL-System}).
+\begin{figure}[!htb]
+\centering
+\includegraphics{DOL-system} 
+\caption{Przykład DOL-system \label{fig:DOL-System}}
+\end{figure}
+\newpage
+Niech \textit{V}  oznaczał alfabet, \textit{$V^{*}$} zbiór wszystkich słów w \textit{V}, a \textit{$V^{+}$} niepuste słowa w \textit{V}. DOL-system jest uporządkowaną trójką $G= \langle V,\omega,P\rangle$ gdzie \textit{V} jest alfabetem systemu, $\omega\in V^{+}$ jest niepustym słowem, zwanym \textit{axiomem} oraz $P\subset V \times V^{*}$ oznaczający skończony zbiór produkcji. Produkcja \textit{a, $\chi\in P $} jest zapisywana jako $a \rightarrow \chi$. Literę \textit{a} nazywa się \textit{poprzednikiem} a słowo \textit{$\chi$} nazywa się \textit{następnikiem}. Zakładamy że dla każdej litery \textit{a$\in V$}, jest co najmniej jedno słowo \textit{$\chi\in V^{*}$} takie że $a \rightarrow \chi$. Jeżeli nie ma wprost podanej produkcji dla litery \textit{a} zakładane jest że następuję \textit{produkcja tożsamościowa} \textit{$a \rightarrow a$} która należy do reguł produkcji \textit{P}. System DOL jest deterministyczny wtedy i tylko wtedy jeżeli dla każdego \textit{a$\in$ V} istnieje dokładnie jeden \textit{$\chi \in V^{*}$} taki że \textit{a$\rightarrow\chi$}.
+
+Jednym z przykładów, znalezionym w przyrodzie, systemu DOL jest roślina \textit{Anabaena catenula} która buduje swoje komórki według określonych wzorów produkcji, które można zapisać w następujący sposób (Rys.\ref{fig:anabea},Równanie \ref{fig:anabeaEQ}).
+
+
+
+
+\begin{equation}
+  \begin{aligned}
+  \omega&: a_{r}  \\
+  p_{1}&: a_{r} \rightarrow a_{l}b_{r}\\
+  p_{2}&: a_{l} \rightarrow b_{l}a_{r}\\
+  p_{3}&: b_{r} \rightarrow a_{r}\\
+  p_{4}&: b_{r} \rightarrow a_{l}
+  \end{aligned}
+ \label{fig:anabeaEQ}
+\end{equation}
+\myequations{Reguły produkcji dla \textit{Anabaena catenula}}
+
+
+
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.6]{Anabaena}
+\caption{Reguły \textit{Anabaena catenula}  \label{fig:anabea}}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{occult}
+  \caption{n=3,$\alpha$=72$\degree$\\
+  F+F+F+F+F\\
+  F$\longrightarrow$FF+F+F+F+F+FF\\ Occult.}
+  \label{DOL:sub1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{hexagonal}
+  \caption{n=4,$\alpha$=60$\degree$\\
+  F\\
+  F$\longrightarrow$F-X--X+F++FF+X-,\\
+  X$\longrightarrow$+F-XX--X-F++F+X,\\
+ Hexagonal Gosper curve.}  \label{DOL:sub2}
+\end{subfigure}
+\caption{Przykłady DOL-system. Obrazy własne.}
+\label{fig:test}
+\end{figure}
+\FloatBarrier
+\newpage
+
+\subsection{Parametryczny L-system}
+Parametryczne Sytemy Lindermayera opierają się na parametrycznych słowach które mogą, lecz nie muszą, być zmieniana przez program w trakcie jego działania. Każda litera wykorzystywana przez system może posiadać  \textit{${0,1,2 ... n}$} ilości parametrów zapisywanych w nawiasach tuż przy tej literze.
+
+\par Litery te należą do alfabetu \textit{V}, a parametry do zbioru liczb rzeczywistych $\Re$. Moduł, litera \textit{A$\in V$} wraz z jej parametrami \textit{$a_{1},a_{2},...,a_{n}$}, zapisywane są jako \textit{$A(a_{1},a_{2},...,a_{n})$}. Każdy moduł należy do zbioru \textit{$M=V \times \Re^{*}$}, gdzie $\Re^{*}$ jest skończoną sekwencją parametrów. Zbiór wszystkich modułów jest przedstawiany za pomocą \textit{$M^{*}=(V \times \Re^{*})^{*}$} a wszystkich niepustych \textit{$M^{+}=(V \times \Re^{*})^{+}$}.
+\par Każda reguła produkcji posiada \textit{parametry} aktualne oraz parametry \textit{formalne}. Jeżeli \textit{$\sum$} jest zbiorem formalnych parametrów, wtedy \textit{C($\sum$)} jest logicznym wyrażeniem z parametrami z \textit{$\sum$}, oraz \textit{$E(\sum)$} oznacza arytmetyczne wyrażenie z parametrami z tego samego zbioru. Zbiór poprawnie skonstruowanych logicznych i arytmetycznych wyrażeń z parametrami z \textit{$\sum$} zapisuje się jako \textit{$C(\sum)$} oraz \textit{$\xi(\sum)$}.
+\newpage
+\par Parametryczny L-system jest definiowany jako uporządkowana czwórka \textit{$G=\langle V,\sum,\omega,P \rangle$}, gdzie
+\begin{itemize}
+\item \textit{V} jest \textit{alfabetem} systemu,
+\item   \textit{$\sum$} jest zbiorem \textit{wszystkich parametrów},
+\item   \textit{$\omega \in (V \times \Re^{*})^{+}$} jest niepustym parametrycznym słowem zwanym \textit{axiomem},
+\item  \textit{$P\subset(V\;\times\;\sum^{*})\;\times\;C(\sum) \;\times\; (V\; \times \xi(\sum))^{*}  $} jest skończonym zbiorem produkcji
+  \end{itemize}
+\par Symbole \textbf{:} oraz \textit{$\rightarrow$} używane są w zapisie aby oddzielić składniki funkcji produkcji takich jak: \textit{poprzednik, warunek oraz następnik}. 
+Produkcja jest równa modułowi parametrycznego słowa wtedy i tylko wtedy kiedy:
+\begin{itemize}
+\item Litera w module i litera w poprzedniku są takie same dla danej reguły,
+\item liczba parametrów formalnych w module oraz liczba parametrów formalnych w poprzedniku danej reguły,
+\item warunek logiczny dla danej reguły jest spełniony, czyli jego wartość wynosi \textit{true}.
+\end{itemize}
+
+Po spełnieniu tych warunków reguła produkcji może być wykorzystania do stworzenia słowa określonego w \textit{następniku} danej reguły.
+\par Prosty przykład został opisany za pomocą Wzoru \ref{fig:przykladParam} oraz przedstawiony graficznie na \figurename \ref{parametryczny.obrazek}.
+\newline \newline \newline
+\begin{equation}
+  \begin{aligned}
+\omega&: B(2),A(4,4)\\
+ p_{1}&: A(x,y) : y\leqslant 3 \rightarrow A(x\ast2,x+y)\\
+p_{2}&: A(x,y) : y> 3 \rightarrow B(x)A(x/y,0)\\
+p_{3}&: B(x) : <1 \rightarrow C\\
+p_{4}&: B(x) : \geq 1 \rightarrow B(x-1)
+\end{aligned}
+ \label{fig:przykladParam}
+\end{equation}\myequations{Przykład parametrycznego L-Systemu}
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.7]{parametryczny} 
+\caption{Przykład systemu parametrycznego. \label{parametryczny.obrazek}}
+\end{figure}
+\subsection{Nawiasowy L-system}
+
+Wcześniej przedstawione warianty L-systemów pozwalały na rysowanie nieprzerwanych oraz złączonych ze sobą segmentów linii, nie zależnie od jego długości segmentu czy kąta między nimi wynikiem pozostaje jedna długa linia. Aby reprezentować rozgałęzione L-systemy w postaci drzew trzeba wprowadzić dodatkowe symbole sterujące żółwiem:
+\begin{itemize}[labelindent=1.5em,labelsep=2cm,leftmargin=*]
+\item[[] Włóż na stos stanu żółwia jego obecne położenie oraz inne możliwe atrybuty nazywane \textit{stanem żółwia}.
+\item [\char`\]]  Zdejmij pierwszy stan żółwia z stosu oraz ustaw go jako obecny \textit{stan}.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.6]{branchingL} 
+\caption{Przykład Systemu nawiasowego\cite{prusinABOP} \label{nawiasy.obrazek}}
+\end{figure}
+
+\section{Geometryczna interpretacja słów przy pomocy grafiki żółwiowej} 
+\subsection{Przestrzeń 2D}               
+Grafika żółwiowa jest terminem opisującym tworzenie geometrii przy pomocy kursora, w tym przypadku żółwia, umieszczonego w kartezjańskim układzie współrzędnych. Stan żółwia określa się jako trójkę \textit{$(x,y,\alpha)$}, gdzie współrzędne kartezjańskie \textit{$(x,y)$} określają pozycję żółwia, a kąt \textit{$\alpha$} opisuje kierunek w którym żółw jest skierowany. Mając podaną długość kroku żółwia \textit{d} oraz kąt \textit{$\beta$} o który ma się przesuwać, żółw może reagować na podawane mu komendy, w formie znaków:
+\newpage
+\begin{itemize}[labelindent=1.5em,labelsep=2cm,leftmargin=*]
+\item[F] Przesuń się o długość \textit{d}. Zmień swój stan na \textit{$(x^\prime,y^\prime,\alpha)$}, gdzie $x^\prime = x+d\cos\alpha$ , oraz $y^\prime = y+d\sin\alpha$. Linia pomiędzy punktami \textit{$(x,y)$} a \textit{$(x^\prime,y^\prime)$} jest rysowana.
+\item[f] Przesuń się o długość \textit{d}, nie rysuj lini.
+\item[+] Obróć się w lewo o kąt \textit{$\beta$}. Następny stan żółwia będzie równy \textit{$(x,y,\alpha+\beta)$}.
+\item[-] Obróć się w prawo o kąt \textit{$\beta$}. Następny stan żółwia będzie równy \textit{$(x,y,\alpha-\beta)$}.
+\end{itemize}
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{symbole}
+  \caption{Żółwiowa interpretacja symboli:\\F, +, -  }
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{symbole2}
+  \caption{Żółwiowa interpretacja słowa. Kąt 90$\degree$}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{Przykłady interpretacji słów w 2d \cite{prusinABOP}}
+\label{fig:test}
+\end{figure}
+\subsection{Przestrzeń 3D}
+Różnicą pomiędzy interpretacją w przestrzeni dwu wymiarowej a trój wymiarowej jest zastąpienie orientacji żółwia przy pomocy trzech wektorów znormalizowanych, prostopadłych do siebie oraz spełniających równanie:
+\begin{equation}
+\overrightarrow{H} \times \overrightarrow{L} = \overrightarrow{U}
+\end{equation}
+\myequations{Równanie spełniające w przestrzeni 3D}
+
+\begin{itemize}[labelindent=1.5em,labelsep=2cm,leftmargin=*]
+\item[ $\overrightarrow{U}$] opisujący wektor skierowany do góry.
+\item[$\overrightarrow{L}$] opisujący wektor skierowany w lewo.
+\item[$\overrightarrow{H}$] opisujący kierunek skierowania żółwia.
+\end{itemize}
+Rotację w przestrzeni 3D opisuję się za pomocą wzoru:
+\begin{equation}
+\begin{bmatrix}
+\overrightarrow{H}^\prime & \overrightarrow{L}^\prime& \overrightarrow{U}^\prime  
+\end{bmatrix}
+=
+\begin{bmatrix}
+\overrightarrow{H} &\overrightarrow{L} &\overrightarrow{U}  
+\end{bmatrix}
+R
+\end{equation}
+\myequations{Rotacja w przestrzeni 3D}
+
+gdzie R jest macierzą rotacji 3$\times$3. Wyróżnia się 3 takie macierze:
+\begin{align*}
+R_u(\alpha)=
+\begin{bmatrix} 
+  \cos\alpha&\sin\alpha & 0\\
+  \sin\alpha&\cos\alpha & 0\\
+  1&0 & 1\\
+\end{bmatrix}
+R_l(\alpha)=
+\begin{bmatrix} 
+  \cos\alpha& 0&-\sin\alpha\\
+  0&1 & 0\\
+  \sin\alpha&0 & \cos\alpha\\
+\end{bmatrix}
+\end{align*}
+\begin{align}
+R_l(\alpha)=
+\begin{bmatrix} 
+  1& 0&-0\\
+  0&\cos\alpha & -\sin\alpha\\
+  0&\sin\alpha & \cos\alpha\\
+  \end{bmatrix}
+\end{align}
+\myequations{Macierze rotacji 3D}
+
+Znaki które sterują żółwiem w przestrzeni 3D są następujące
+\begin{itemize}[labelindent=1.5em,labelsep=2cm,leftmargin=*]
+\item[+] Obróć się w lewo o kąt $\alpha$ używając macierzy \textbf{$R_U(\alpha)$}.
+\item[-] Obróć się w prawo o kąt $\alpha$ używając macierzy \textbf{$R_U(-\alpha)$}.
+\item[\&] Obróć się w dół o kąt $\alpha$ używając macierzy \textbf{$R_L(\alpha)$}.
+\item[\string^] Obróć się w górę o kąt $\alpha$ używając macierzy \textbf{$R_L(-\alpha)$}.
+\item[\textbackslash] Obróć się w lewo o kąt $\alpha$ używając macierzy \textbf{$R_H(\alpha)$}.
+\item[/] Obróć się w prawo o kąt $\alpha$ używając macierzy \textbf{$R_H(-\alpha)$}.
+\item[|] Obróć się w około używając macierzy \textbf{$R_U(180\degree)$}.
+\item[[] Dodaj gałąź.
+\item [\char`\]]  Skończ gałąź.
+\end{itemize}	
+
+
+\FloatBarrier
+\section{Krzywe B-sklejane}	
+W implementacji wykorzystane zostały krzywe B-sklejane aby można było edytować stworzony prez algorytm model. Krzywe te są uogólnieniem reprezentacji wielomianowych krzywych Beziera \cite{splajn}. Krzywa B-sklejana jest określana przez podanie stopnia sklejanych wielomianów \textit{n}, ciągu \textit{m+1} węzłów $u_0, \ldots, u_n$, przy czym ciąg ten powinien być niemalejący oraz \textit{m} powinno być większe od \textit{2n}, a także z \textit{m-n} punktów kontrolnych $p_0, \ldots, p_{m-n-1}$.
+Ciąg \textit{$u_n$} węzłów krzywej dzieli przedział \textit{t$\in$ [0,1]} na podprzedziały, na których zdefiniowane są poszczególne krzywe wielomianowe.
+Wzór będący definicją ma postać	:
+	\begin{equation}
+	p(t)=\sum_{i=0}^{m-n-1} p_i N_{i}^{n}(t), 		\; t\in [u_n,m_m-b]
+	\end{equation}\myequations{Definicja pod przedziału B-sklejanej}
+
+gdzie $N_{i}^{n}$ jest unormowaną funkcją b-sklejaną stopnia \textit{n}, którą można przedstawić za pomocą wzoru:
+\begin{equation}
+N_{i}^{0}(t)\;\begin{cases} 1\qquad dla\,t\in[u_i,u_i+1) \\
+0 \qquad   
+
+N_{i}^{n}(t)=\frac{t-u_i}{u_{i+n}-u_i} N_{i}^{n-1}(t) + \frac{u_{i+n+1} - t}{u_{i+n+1} - u_{i+1}} N_{i+1}^{n-1}(t) 
+\end{cases}
+\end{equation}\myequations{Definicja krzywej B-Sklejanej \textit{n} stopnia}
+
+Przykład umieszczony na \figurename{\ref{bezier.obrazek}} pokazuje splajn stworzony\\ z 3 punktów, gdzie punkt kontrolny posiada dwa, odbite lustrzanie, punkty którymi można przesuwać zmieniając położenie krzywych.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.7]{bezier} 
+\caption{Przykład Krzywej Beziera. Zdjęcie własne. \label{bezier.obrazek}}
+\end{figure}
+\chapter{Przegląd istniejącej literatury i rozwiązań}
+
+\section{Wstęp}
+Pierwsza wersja książki \cite{prusinABOP} została wydana w 1990 roku a jej dwie kolejne wersje w 1996 oraz 2004. Po prawie 26 latach od pierwszego wydania książki bardzo dużo się zmieniło. Grafika komputerowa osiągnęła poziom w którym graficy są w stanie wygenerować modele zawierające miliony trójkątów  z teksturami o bardzo wysokiej jakości i ogromnej ilości detali. Dodawanę są nowe rozwiązania które powodują wzrost realizmu roślin. W pracy \cite{wlosy} opisane jest rozwiązanie które pozwala wygenerować rośliny posiadające włoski, zwiększa też jej realizm przez wygenerowanie odpowiedniej tekstury oraz zastosowanie zaawansowanych modeli światła.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.2]{wlosy} 
+\caption{Roślina pokryta włoskami \cite{wlosy}\label{wloski.obrazek}}
+\end{figure}
+Przykładów rozwoju L-systemów jest wiele lecz prawie wszystkie dążą do fotorealizmu modeli oraz poprawy jakości tekstur oraz światła na wygenerowanych modelach.
+\section{Programy generujące roślinność}
+W tym rozdziale zostanie przedstawione kilka programów których zadaniem jest wygenerować modele roślin.
+\subsection{SpeedTree}
+
+Jednym z największych potentatów od tworzenia i modelowania roślin jest program firmy \textit{Interactive Data Visualization} o nazwie \textit{SpeedTree}.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.3]{speedTree} 
+\caption{Interfejs programu SpeedTree oraz przykładow drzewo. \cite{speedTreeZrodlo}\label{speedTree.obrazek}}
+\end{figure}
+ Wykorzystywany jest od 2002 roku do tworzenia roślinności w grach komputerowych np. w rodzimym \textbf{Wiedzminie 3}, \textbf{Dragon Age: Inquisition}, \textbf{Destiny} czy w filmach np. \textbf{Star Wars: Przebudzenie Mocy}, \textbf{Awatar}, \textbf{Maleficent}.
+ Cena produktu waha się od 19 dolarów za miesiąc do wykorzystania w silnikach \\gier jako wtyczka, do 4.995 dolarów za SpeedTree Cinema7 który jest samodzielną aplikacją.
+ \par Pozwala on na modelowanie oraz animacje stworzonych w aplikacji roślin. W tym programie nie został zastosowany żaden algorytm generowania, użytkownik sam musi takie drzewo wymodelować. Program ten jest przyjazny dla użytkownika, operuje się w nim krzywymi, diagramami oraz suwakami. Przykładowe drzewo oraz interfejs użytkownika został przedstawiony na \figurename \ref{speedTree.obrazek}
+
+
+\subsection{Houdini}
+Kolejnym programem który ma mozliwosć generowania drzew jest \textit{Houdini} firmy \textit{Side Effects Software}. Jest to silnik proceduralny do tworzenia grafiki oraz animacji. Jest on wykorzystywany w takich filmach np. \textit{300} czy \textit{Grawitacja}, czy w grach np. \textit{Smite}. 
+Silnik ten proponuje kilka swoich wersji których ceny są w przedziale od 199  do 4.495 dolarów.
+
+Tak jak w poprzednim programie, tworzenie drzew w silniku Houdini opiera się na diagramach, suwakach oraz krzywych. Tutaj dodatkowo jest możliwość wpisania reguł produkcji. Pozwala to dowolnie dobierać parametry Systemu Lindermayera i manipulować nimi. Przykładowy render z programu został umieszczony na \figurename \ref{houdini.obrazek}.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.8]{houdini} 
+\caption{Wygenerowany las w programie Houdini.\cite{houdiniZrodlo}\label{houdini.obrazek}}
+\end{figure}
+
+
+	
+\section{Algorytm SpaceColonization} 
+Jednym z sposobów komputerowego generowania roślinności, a w szczególności drzew, jest algorytm o nazwie SpaceColonization\cite{sca}. 
+ \begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.4]{spaceModel} 
+\caption{Przykład wpływu modelu na wynik algorytmu \cite{treeSketch}.\label{sca.model}}
+\end{figure}
+Jako dane wejściowe użytkownik podaje zamknięty model 3D, bądź obrys modelu, \figurename\ref{sca.model}, korony drzewa w której są generowane punkty kolonizacji. Rozmiar, położenie oraz promień oddziaływania punktów, które sygnalizują wolne miejsce dla rozwoju drzewa, jest ustalane przez użytkownika. Punkty są usuwane po zetknięciu z gałęzią drzewa, tak aby zaznaczyć że w tym miejscu nie ma już miejsca na dalszy rozwój drzewa. Pierwszym krokiem algorytmu jest więc wygenerowanie tych punktów polegające na wybraniu losowych punktów wewnątrz podanego przez użytkownika modelu/obrysie. Drugim krokiem jest stworzenie szkieletu drzewa poprzez rozwijanie się gałęzi od szkieletu do najbliżej wygenerowanych punktów kolonizacji w promieniu oddziaływania każdego punktu. Krok drugi jest powtarzany tak długo aż gałąź nie odnajdzie punktu kolonizacji bądź ilość iteracji przekroczy maksymalną ilość iteracji podaną przez użytkownika. 
+ \par Na \figurename\ref{sca.obrazek} został przedstawiony przykład objaśniający działanie opisywanego w tym rozdziale algorytmu. Czarne punkty oznaczają szkielet drzewa, niebieskie zaś punkty kolonizacji. Wszystkie punkty kolonizacją są przypisywane do najbliższych punktów szkieletu drzewa (niebieskie linie). Następnie obliczany jest wektor z każdego punktu kolonizacji do najbliższego punktu szkieletu, i jest on normalizowany (czarne wektory). Wszystkie wektory z tego samego punktu szkieletu są sumowane i normalizowane (czerwony wektor). Dzięki temu powstają nowe punkty szkieletu, w punkcie \textit{e}. Następnie sprawdzane jest czy punkty kolonizacji posiadają w swoim promieniu oddziaływania środki punktów szkieletu. Jeżeli tak to punkty spełniające te wymagania są usuwane i następuję następna iteracja algorytmu.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.6]{sca} 
+\caption{SpaceColonization Algorithm\cite{sca} \label{sca.obrazek}}
+\end{figure}
+\section{Prace wykorzystujące krzywe Beziera}
+Powstało wiele prac opiewających wykorzystanie L-Systemów w połączeniu \\z krzywymi B-sklejanymi. Jedną z nich jest praca\cite{Sub} w której dodatkowo wykorzystywane są tzw \textit{subdivision surface}. Powoduje to większe wygładzenie modelowanej powierzchni, dzięki czemu drzewa posiadają o wiele więcej szczegółów. Przy łączeniu cylindrów usuwa się wierzchołki znajdujące się w środku gałęzi, co powoduje zmniejszenie ilości wierzchołków oraz gładsze połączenia między tworzonymi cylindrami. Upraszcza to także wykorzystywanie takich modeli \\w grach, gdyż ilość trójkątów może być dowolnie zmniejszana i zwiększana \\w razie potrzeby.
+\par Inne podejście prezentuje dokument\cite{VertexVertex} w którym krzywe są wykorzystywane do tworzenia samej siatki przy użyciu \textit{Curve subdivision algorithm}. W tym rozwiązaniu nie tworzy się splainów na których opera się gałęzie ale wykorzystuje się je do tworzenia dynamicznej siatki trójkątnej. Siatka ta w zależności od potrzeb w miejscach w których wymagana jest większa szczegółowość jest większej rozdzielczości, a w miejscach w których nie ma potrzeby większej szczegółowości wierzchołki są usuwane. Powoduje to oszczędzanie ilości trójkątów, ale uniemożliwia to edytowanie kształtów 
+\chapter{Praca praktyczna}
+
+\section{Interfejs użytkownika}
+
+Silnik Unity pozwala na dodanie do Edytora własnych przycisków oraz sterowanie zachowaniem danego obiektu poprzez edytor bez konieczności uruchamiania gry. Dostępne jest to dzięki klasie \textit{CustomEditor}. 
+\begin{lstlisting}[label=edytor,caption=Kod CustomEdytor dla Interpretera,belowcaptionskip=4pt,captionpos=b]
+[CustomEditor(typeof(Interpreter))]
+public class InterpreterGUI : Editor 
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+        Interpreter inter = (Interpreter)target;
+        if(inter!=null)
+        { 
+         if(GUILayout.Button("CreateTree"))
+         {
+            inter.CreateTreeString();
+         }
+        }
+    }
+}
+\end{lstlisting}
+Wirtualna metoda \textit{OnInspectorGUI} wywoływana jest gdy obiekt jest zaznaczony, co za tym idzie jego inspektor jest wyświetlany. \ref{unity.inspektor}.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.7]{interpreterGUI} 
+\caption{Wynik powyższego kodu. Źródło własne. \label{unity.inspektor}}
+\end{figure}
+\FloatBarrier
+Drugą ważną metodą jest \textit{OnSceneGUI} która jest wywoływana gdy obiekt jest zaznaczony. Efektem działania tej metody są zmiany w samej scenie, nie w inspektorze. 
+\begin{lstlisting}[mathescape=true,label=OnSceneGUI,caption=Kod powodujący zmiany na scenie.,belowcaptionskip=4pt,captionpos=b]
+Handles.Label(point.position + new Vector3(0, HandleUtility.GetHandleSize(point.position) $\cdot$ 0.4f, 0), point.gameObject.name);
+\end{lstlisting}
+Powyższy \codename\ref{OnSceneGUI} powoduje wyświetlenie się numeru punktu kontrolnego na krzywej B-sklejanej na \figurename\ref{bezier.obrazek}. Natomiast poniższy \codename\ref{zmiany} powoduje narysowanie niebieskiego kółka którym możemy zmieniać wartości krzywych.
+\begin{lstlisting}[mathescape=true,label=zmiany,caption=Tworzenie uchwytów na scenie.,belowcaptionskip=4pt,captionpos=b]
+Vector3 newGlobal1 = Handles.FreeMoveHandle(point.globalHandle1, point.transform.rotation, HandleUtility.GetHandleSize(point.globalHandle1) $\cdot$ 0.075f, Vector3.zero, Handles.CircleCap);
+\end{lstlisting}
+Aby móc wywoływać metody w edytorze potrzebne jest dodanie atrybutu do klasy o nazwie \textit{ExecuteInEditMode}.
+\begin{lstlisting}[label=execute,caption=Tworzenie metod wykonywalnych w trybie edytora.,belowcaptionskip=4pt,captionpos=b]
+[ExecuteInEditMode]
+ public void BuilProcdMesh(Material branchMaterial)
+ {
+  Mesh mesh = BuildMesh();
+  MeshFilter filter = gameObject.GetComponent<MeshFilter>();
+  if (filter != null)
+   {
+    filter.sharedMesh = mesh;
+    gameObject.GetComponent<MeshRenderer>().material = branchMaterial;
+   }
+ }
+\end{lstlisting}
+\codename \ref{execute} jest wykorzystywany w tworzeniu siatki trójwymiarowej pojedynczej gałęzi oraz dodania na niej, podanego w parametrach, materiału.
+
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.7]{treeGUI} 
+\caption{Przycisk \textit{SetMaterial}. Źródło własne. \label{unity.treeGUI}}
+\end{figure}
+
+
+Wygląd interfejsu użytkownika można więc rozdzielić na dwie części. GUI\footnote{ang. graphical user interface, pol. graficzny interfejs użytkownika} całego obiektu drzewa \figurename\ref{unity.treeGUI}, składającego się z gałęzi, oraz GUI odpowiedzialne za tworzenie drzew przedstawione na \figurename\ref{unity.inspektor}.
+
+\section{Implementacja L-systemu}
+
+Mimo iż w silniku UnrealEngine4 spliny oraz tworzenie geometrii proceduralnej są zaimplementowane przez developerów, to silnik ten nie wspiera późniejszej edycji tych obiektów w edytorze. Podyktowane jest to kilkoma błędami \\w silniku UE4 oraz skomplikowaniem samej budowy silnika napisanej w zmodernizowanej i bardzo trudnej wersji języka C++. Sama dokumentacja do UE4 nie jest dobrze rozwinięta pod kątem modyfikacji silnika, w przeciwieństwie do Unity5. 
+
+Ideą implementacji było stworzenie prostego analizatora składniowego L-systemu oraz szybkiej implementacji tworzenia i przeglądania słów składających się nawet z kilku milionów znaków. Język C\# udostępnia do tego dużo ilość klas jednak  nastawione są one na prostotę użytkowania, a nie na szybkość działania, przez co metody zawarte w tym języku nie zostały użyte w implementacji. Jednak wbudowana klasa string nie jest przystosowana do operacji na napisach, co spowodowało  skorzystanie z wbudowanej klasy StringBuilder \cite{stringBuilder} która oferuje szybkie operacje na pojedynczych znakach.
+Kod implementacji składa się kilku struktur.
+\begin{itemize}[labelindent=5.5em,labelsep=1cm,leftmargin=*]
+\item[LType] zawiera opis parametru, jego wartość, w postaci liczby zmiennoprzecinkowe oraz nazwę w formie obiektu klasy string.
+\item[LFunction] zawiera definicje produkcji oraz zbiór parametrów wykorzystywane w funkcji produkcji.
+\item[LObject] zawiera obiekt opisujący dany system.
+\item[PosRot] zawiera w sobie kwaternion odpowiedzialny za obrót oraz pozycje.
+\end{itemize}
+
+Wygląd przykładowego zestawienia obiektów typu \textit{LObject} znajduję się na \figurename\ref{unity.inspektor} gdzie Objects jest listą \textit{LObject}, \textit{Functions} listą \textit{LFunction} zawierających się w danym obiekcie a \textit{Defines} określa listę obiektów typu \textit{LType}.
+\par Klasą która kreuje słowa na podstawie reguł produkcji jest \textit{Interpreter} oraz jego dwie metody \textit{CreateTreeString()} oraz \textit{CreateBazierTree(LObject currentObject)}. Odpowiedzialne są one za stworzenie słowa na podstawie reguł oraz wykreowanie szkieletu drzewa składającego się z krzywych Beziera.
+\par Dla każdego zdefiniowanego w liście \textit{Defines} parametru jest przypisana odpowiednia wartość zmiennoprzecinkowa. Jeżeli podczas przeglądania reguły program natrafi na któryś z parametrów automatycznie zamienia wartość znakową na przypisaną wartość. Podczas trwania głównego przebiegu tworzenia szkieletu program oszczędza dzięki temu czas oraz zasoby.
+Przykładowo z \figurename\ref{unity.inspektor} reguła 
+\begin{equation}
+!(vr)F(50)[ \&(a)F(50)A]/(d1)[ \&(a)F(50)A]/(d2)[ \&(a)F(50)A]
+\end{equation}\myequations{Regułą do zamiany }
+zamieni się na 
+\begin{multline*}
+!(1.732)F(50)[ \&(18.95)F(50)A]/(94.74)[ \&(18.95) \\   F(50)A]/(132.63) [ \&(18.95)F(50)A]
+\end{multline*}\myequations{Reguła po zamianie}
+Parametry przypisane do reguł są zamieniane w trakcie działania głównego przebiegu, ponieważ są one obliczane na bieżąco i nie ma możliwości wcześniejszego przepisania. Przykładowo reguła
+\begin{equation}
+F(l) \rightarrow F(l \cdot lr)
+\end{equation}\myequations{Przykład funkcji L-Systemu}
+oznacza że każda pierwsza wartość w nawiasie, następującym po wartości funkcji, zostanie zrzutowana jako zmienna znakowa \textit{l} co za tym idzie zostanie, w tym przypadku, pomnożona przez wartość odpowiadającą definicji słowa \textit{lr}.
+\par Każda iteracja algorytmu oblicza swoje główne słowo składające się z wartości znakowych. Pod koniec przejścia danej iteracji wszystkie wartości znakowe są poddawane analizie pod kątem zamiany na wartość liczbową,\\w przypadku wystąpienia znaków przedstawiających że dane słowo może być wyrażeniem, znaków matematycznych. Przykładowo \textit{Interpreter} natrafiając na słowo \textit{$A(2\cdot0.23,3/2.12)$} wywoła metodę odpowiedzialną za zamianę tego wyrażenia na wyrażenie całkowite. Parametry funkcji \textit{A} zostaną zamienione na wartości liczbowe i poddane ewaluacji oraz obliczeniu. W tym przypadku wynikiem będzie \textit{$A(0.46,1.4150)$}.
+
+Do funkcji \textit{EwaluateExpression} przekazywane są dwie wartości znakowe oraz jedna wartość typu wyliczeniowego. Typ ten przedstawia rodzaj wyrażenia jakim poddane będą wartości zmiennoprzecinkowe. Funkcja odwzorowuje działanie na liczbach oraz zwraca jego wartość w postaci znakowej. 
+Aby przyspieszyć działanie algorytmu powyższej operacji wszystkie funkcje oraz ich nazwy zostały przedstawione w słowniku. Jako klucz użyte zostały użyte nazwy funkcji a jako wartość cała funkcja.
+\newpage
+\begin{lstlisting}[label=execute,caption=Funkcja pomocnicza do obliczania wartosci funkcji. ,belowcaptionskip=4pt,captionpos=b]
+    static public string EvaluateExpression(string pre, EXPRESSION e, string post)
+    {
+        float pref = float.Parse(pre);
+        float postf = float.Parse(post);
+        switch (e)
+        {
+            case EXPRESSION.ADD: return (pref + postf).ToString(); 
+            case EXPRESSION.MULT: return (pref * postf).ToString(); 
+            case EXPRESSION.DIV: return (pref / postf).ToString(); 
+            case EXPRESSION.SUB: return (pref - postf).ToString();
+        }
+        return "NON";
+    }
+\end{lstlisting}
+
+\begin{figure}[!htp]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{drawDirection}
+\caption{Wizualizacja kierunku(kolor zielony), normalnej oraz binormalnej(żółty) krzywej. Źródło własne. \label{unity.drawDirection}}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=0.5\linewidth]{krzyweDrzewo}
+\caption{Szkielet drzewa. Źródło własne. \label{unity.krzyweDrzewo}}
+\end{subfigure}
+%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=0.5\linewidth]{krzyweDrzewoMod}
+\caption{Szkielet drzewa po modyfikacji. Źródło własne. \label{unity.krzyweDrzewoMod}}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+\centering
+  \includegraphics[width=1.0\linewidth]{krzyweDrzewoSiatka2}
+\caption{Siatka na szkielecie po modyfikacji. Źródło własne. \label{unity.krzyweDrzewoSiatka}}
+\end{subfigure}
+\caption{Przedstawienie tworzenia szkieletu drzewa, jego własności oraz siatki stworzonej na podstawie szkieletu.}
+\label{unity.direction}
+\end{figure}
+\newpage
+Kolejnym krokiem algorytmu jest stworzenie szkieletu z krzywych B-sklejanych, na podstawie wcześniej wygenerowanego słowa. Słowo to może się składać z kilku tysięcy znaków, więc jego analiza składniowa zajmuję większą cześć czasu działania algorytmu. Dla poniższych przykładów słowo tworzące składa się z 1035 znaków dla 3 iteracji.
+ Do tworzenia krzywych została użyta biblioteka o nazwie \textit{Bezier Curve Editor Package}\cite{bezUnity} przygotowana przez firmę \textit{Arkham Interactive} pobraną z orginalnego sklepu Unity, AssetStore. Paczka ta wspiera tworzenie splinów oraz możliwości ich edycji poprzez uchwyty. Do tej pracy zostały dopisane dodatkowe funkcje pomocnicze \cite{youtube}.
+
+\begin{lstlisting}[mathescape=true,label=direction,caption=Funkcje odliczające własności krzywej. ,belowcaptionskip=4pt,captionpos=b]
+ public static Vector3 GetFirstDerivativeQuadratic(Vector3 p0, Vector3 p1, Vector3 p2, float t)
+    {
+        return  2f $\cdot$ (1f - t) $\cdot$ (p1 - p0) +  2f $\cdot$ t $\cdot$ (p2 - p1);
+    }
+    public static Vector3 GetFirstDerivativeCubic(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
+    {
+        t = Mathf.Clamp01(t);
+        float oneMinusT = 1f - t;
+        return
+            3f $\cdot$ oneMinusT $\cdot$ oneMinusT $\cdot$ (p1 - p0) +
+            6f $\cdot$ oneMinusT $\cdot$ t $\cdot$ (p2 - p1) +
+            3f $\cdot$ t $\cdot$ t $\cdot$ (p3 - p2);
+    }
+    public static Vector3 GetNormal(Vector3 tangent,Vector3 binormal)
+    {
+        return Vector3.Cross(tangent, binormal);
+    }
+    public static Vector3 GetBinormal(Vector3 up, Vector3 tangent)
+    {
+        return Vector3.Cross(up, tangent).normalized;
+    }    
+    \end{lstlisting}
+
+
+\codename\ref{direction} wykorzystywany jest do stworzenia własności krzywej potrzebnych do generowania siatki. Własności te są opisywane jako zmienne \textit{X},\textit{Y} oraz \\ \textit{Z} pozycji danego punktu na krzywej w przestrzeni. Wizualizacja powyższych metod została przedstawiona na \figurename \ref{unity.drawDirection}, a szkielet drzewa stworzony z samych B-sklejanych na \figurename \ref{unity.krzyweDrzewo}. Możliwości modyfikacji szkieletu za pomocą, przedstawionych na \figurename\ref{bezier.obrazek} uchwytów, zostało przedstawione na \figurename\ref{unity.krzyweDrzewoMod}. Widać zmianę krzywych, szkieletu, w stosunku do pierwowzoru. Modyfikowanie szkieletu może się odbywać poprzez zmienianie pozycji uchwytów ale także poprzez przesuwanie punktów kontrolnych oraz ich obracanie, przy użyciu wcześniej wspomnianych uchwytów jak i ekwiwalentnych wbudowanych w edytorze Unity5 .
+\newline
+\par Ostatnim etapem algorytmu jest stworzenie siatki na podstawie szkieletu. Do tego celu został w wykorzystany tutorial "Modeling by numbers"\cite{MBN}, w którym autorka opisuje jak tworzyć geometrie proceduralną w silniku Unity. 
+Wcześniej wspomniane własności spline przedstawione na \figurename\ref{unity.drawDirection} takie jak normalna, kierunek oraz binormalną  są wykorzystywane w tym punkcie algorytmu. Dla każdej gałęzi tworzony jest komponent Unity o nazwie \textit{MeshFilter} oraz \textit{MeshRenderer}\cite{unityMesh}. Pierwszy z nich przechowuje w sobie siatkę trójwymiarową a drugi ją wyświetla w pozycji określonej przez komponent \textit{Transform} danego obiektu. Unity udostępnia także klasę o nazwie \textit{Mesh}, której nazwa sugeruję zawiera w sobie siatkę trójkątną. Siatka składa się z wierzchołków oraz ich indeksów. Każdy wierzchołek składa się z normalnej, pozycji tekstury zwanej UV, swojej pozycji oraz wielu innych opcjonalnych wartości. Przy tworzeniu siatki opartej o pewne punkty środkowe, punkty szkieletu, trzeba wziąć pod uwagę zmiany jakie następują z każdym punktem splinu. Zmiany te są obliczane dzięki funkcjom przedstawionym na 
+\codename\ref{direction}. Tworzenie się cylindrów w których środek znajduję się na krzywej jest zaimplementowane w następujący sposób
+\begin{lstlisting}[label=buildMesh,caption=Funkcja tworzaca cylinder w okół punktu krzywej. ,belowcaptionskip=4pt,captionpos=b]
+    public override Mesh BuildMesh()
+{
+  MeshBuilder meshBuilder = new MeshBuilder();
+  int steps = m_stepPerSpline * spline.pointCount;
+  Vector3 centrePos = new Vector3();
+    for (int i = 0; i <= steps; i++)
+    {
+      centrePos = spline.GetPointAt(i/(float)steps);
+      float v = (float)i / spline.pointCount;
+      Vector3 tangent = spline.GetVelocityAt(i/(float)steps);
+      Vector3 binormal = BezierCurve.GetBinormal(Vector3.up, tangent);
+      Vector3 normal = BezierCurve.GetNormal(tangent, binormal);
+      Quaternion rotation = Quaternion.LookRotation(normal, tangent);
+      BuildRing(meshBuilder, m_RadialSegmentCount, centrePos, spline.GetRadiusAt(i/(float)steps), v, i>0, rotation);
+  }
+  return meshBuilder.CreateMesh();
+}
+\end{lstlisting}
+Powyższa funkcja oblicza siatkę trójkątną dla każdego z cylindrów, co za tym idzie dla każdej gałęzi osobno. Tworzenie jej podzielone jest na budowanie określonej ilości pierścieni z wcześniej znana długością oraz grubością. Funkcja tworząca pierścienie to \textit{BuildRing},a przekazywane do niej wartości odpowiadają za liczbę segmentów na powierzchni bocznej, szerokość pierścienia, wartości UV oraz rotacje. Całość rotacji obliczana jest przez funkcje \textit{Quaternion.LookRotation} która zwraca rotacje w której pierwsza wartość funkcji jest kierunkiem patrzenia a druga wskazuje w którym kierunku jest góra.
+Łączenie pierścieni w jeden model odbywa się automatycznie w funkcjach silnika Unity5. Kontenerem zawierającym wszystkie gałęzie stworzone przez algorytm jest klasa \textit{Tree} której interfejs graficzny przedstawia \figurename\ref{unity.treeGUI}. Widać tam że każda gałąź przedstawia się za pomocą osobnego obiektu typu \textit{BezierCurve}, a tworzenie siatki jest możliwe dla całej grupy obiektów.
+\newpage
+\section{Przykłady}
+W tej sekcji zostaną umieszczone wyniki działania algorytmu oraz krótki opis każdego z nich. Dla każdego z przykładów zostały przyjęte te same wartości. Lczbę segmentów na powierzchnni bocznej wynosi 5 oraz 5 punktów na splain. Oznacza to że każda krzywa zostanie podzielona na 5 równych części.
+
+
+\subsection*{Przykład 1}
+Pierwszym przykładem jest System w którym występują następujące 
+własności.\newline\newline
+Reguły:
+\begin{equation*}
+F(l)\rightarrow F(l\cdot2) 
+\end{equation*}
+\begin{equation*}
+X(l) \rightarrow F(l)[/(r)X(l)]F(l)[\setminus(r)X(l)-(r)X(l)]F(l)[\setminus(r)X(l)+(r)X(l)] 
+\end{equation*}
+Słowo początkowe, axiom:
+\begin{center}
+X(1)
+\end{center}
+Iteracje:
+\begin{center}
+5
+\end{center}
+Stałe:
+\begin{equation*}
+r\rightarrow 25
+\end{equation*}
+
+
+Dla tej ilości iteracji liczba gałęzi wynosi 468, słowo tworzące zawiera 46086 znaków, ilość wierzchołków 87200.
+Przykład ten jest modyfikacją prostego źdźbła trawy przedstawionego w \cite{prusinABOP}.
+\iffalse
+ Jego rozgałęzienie zostało uzyskane poprzez liczną ilość znaków \textit{[} oraz \textit{]} które sterują tworzeniem się gałęzi. Każda z gałęzi jest skierowana pod kątem 25 $\degree$ w stosunku do gałęzi rodzica przez co mamy wrażenie ładnego rozgałęzienia chaotycznej struktury, mimo wygenerowania jej z wzoru matematycznego. Modyfikacja siatki przedstawionej na \figurename \ref{przyklad1.siatka} znajduję się na \figurename\ref{przyklad1.siatkaMOD}. Widać że zmianie uległą główna gałąź oraz większość pomniejszych przez co daje to wrażenie coraz większej naturalności. 
+ \fi
+\subsection*{Przykład 2}
+Reguły:
+\begin{equation*}
+F(l)\rightarrow F(l\cdot2) 
+\end{equation*}
+\begin{equation*}
+X(l,w) \rightarrow F(w\cdot l)[/(r\cdot l)X(l,w)-(r)X(w,w)]+(r)F(l)[\setminus(l)X(l,w)+(r)X(l,w)]-(r)F(w)
+\end{equation*}
+Słowo początkowe, axiom:
+\begin{center}
+X(1)
+\end{center}
+Iteracje:
+\begin{center}
+5
+\end{center}
+Stałe:
+\begin{equation*}
+r\rightarrow 17.2
+\end{equation*}
+
+%\item [] $\rightarrow$ 
+%\end{itemize}
+
+
+Dla tej ilości iteracji liczba gałęzi wynosi 171, słowo tworzące zawiera 24918 znaków, ilość wierzchołków 73700. Opis systemu to źródło własne.
+
+\subsection*{Przykład 3}
+Reguły:
+\begin{equation*}
+F(l)\rightarrow F(l\cdot2) 
+\end{equation*}
+\begin{multline*}
+X(l,w) \rightarrow F(w\cdot l)[/(r\cdot l)X(l,w)-(r)X(w,w)C(l)]\\
++(r)F(l)[G(l)\setminus(l)X(l,w)+(r)X(l,w)]-(r)F(w)-(r)F(w)
+\end{multline*}
+\begin{equation*}
+G(l) \rightarrow F(l/5)[X(l,l)+(r\cdot k)]
+\end{equation*}
+\begin{equation*}
+C(l) \rightarrow F(l/5)[X(l,l)/(r\cdot k)]
+\end{equation*}
+
+
+
+Słowo początkowe, axiom:
+\begin{center}
+X(1,2)
+\end{center}
+Iteracje:
+\begin{center}
+5
+\end{center}
+Stałe:
+\begin{equation*}
+r\rightarrow 23.5
+\end{equation*}
+\begin{equation*}
+k\rightarrow 0.707
+\end{equation*}
+
+
+
+
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\begin{figure}[!htp]
+\centering
+\begin{subfigure}{.68\textwidth}
+  \centering
+  \includegraphics[width=0.8\linewidth]{siatka1}
+\caption{Siatka bez modyfikacji.\\Źródło własne. \label{przyklad1.siatka}}
+\end{subfigure}
+%
+\begin{subfigure}{.68\textwidth}
+  \centering
+  \includegraphics[width=0.8\linewidth]{siatkaMOD1}
+\caption{Siatka po modyfikacji.\\Źródło własne. \label{przyklad1.siatkaMOD}}
+\end{subfigure}
+\caption{Porównanie siatek przykładu 1.}
+\label{przyklad1}
+\end{figure}
+\FloatBarrier
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\begin{figure}[!htp]
+\centering
+\begin{subfigure}{.68\textwidth}
+  \centering
+  \includegraphics[width=0.8\linewidth]{przyklad2}
+\caption{Siatka bez modyfikacji.\\Źródło własne. \label{przyklad2.siatka}}
+\end{subfigure}
+%
+\begin{subfigure}{.68\textwidth}
+  \centering
+  \includegraphics[width=0.8\linewidth]{przyklad2MOD}
+\caption{Siatka po modyfikacji.\\Źródło własne. \label{przyklad2.siatkaMOD}}
+\end{subfigure}
+\caption{Porównanie siatek przykładu 2.}
+\label{przyklad2}
+\end{figure}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\begin{figure}[!htp]
+\centering
+\begin{subfigure}{.9\textwidth}
+  \centering
+  \includegraphics[width=0.8\linewidth]{przyklad3MOD}
+\caption{Siatka bez modyfikacji.\\Źródło własne. \label{przyklad3.siatka}}
+\end{subfigure}
+%
+\begin{subfigure}{.9\textwidth}
+  \centering
+  \includegraphics[width=0.8\linewidth]{przyklad3}
+\caption{Siatka po modyfikacji.\\Źródło własne. \label{przyklad3.siatkaMOD}}
+\end{subfigure}
+\caption{Porównanie siatek przykładu 3.}
+\label{przyklad3}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Podsumowanie oraz wnioski}
+Dokument ten miał na celu przedstawić pomysł prostego tworzenia kształtów drzewiastych. System-Lindermayera wykorzystany w pracy idealnie nadaję się do przedstawiania budowy roślin oraz ich rozwoju. Swoboda manipulowania małą liczbą zmiennych oraz mało skomplikowane wzory reguł powodują że rozwiązanie to jest bardzo intuicyjne. Teorie związane z L-systemami są używane przy opisie gatunków roślin, więc naturalną drogą było wykorzystanie ich w grafice komputerowej. Natomiast wykorzystanie krzywych B-sklejanych w celu tworzenia szkieletu drzewa tworzy możliwość prostej modyfikacji, bez korzystania z zewnętrznego oprogramowania modelującego. Tworzenie oraz dodawanie punktów krzywych dodaje możliwości dodatkowego tworzenia gałęzi w miejscach gdzie algorytm tego nie zrobił. Program ma możliwość przesunięcia każdego punktu oraz zmiany kąta nachylenia krzywej, przez co modyfikacja kierunku gałęźi nie powoduje problemów. Tworzenie modeli o małej ilości wierzchołków, lecz o dużym skomplikowaniu nie było by możliwe w przypadku modelowania ręcznego. Metoda ta pozwala na szybkie wygenerowanie bardzo złożonego kształtu przy małym nakładzie pracy osoby tworzącej i w bardzo krótkim czasie. Przykłady umieszczone w poprzednim rozdziale pokazują jak nawet mała ilość reguł oraz zmiennych jest w stanie wygenerować bardzo skomplikowane modele. Zwiększając ilość reguł można by wprowadzić coraz to większość naturalność wygenerowanego przez algorytm modelu.
+Porównując stworzony tutaj program z rozwiązaniami obecnymi na rynku można stwierdzić że większość z nich nie stworzy tak skomplikowanego modelu w tak krótkim czasie. Rozwiązanie zaproponowane w tym dokumencie ma przewagę nad rozwiązaniami w których wymagany jest osobny program modelujący. W większości programów kreujących drzewa proceduralnie jest wykorzystywany algorytm SpaceColonization, ale nie pozwala on na modyfikacje które mogą być wprowadzane w L-systemach. Wspomniany wcześniej algorytm SC nie da rady wygenerować liści, kwiatów czy całej animacji roślin. Nie mamy też możliwości ustalenia kształtu każdej gałęzi czy wprowadzenia bardziej szczegółowych rozwiązań, mamy tylko opcje ustawienia wyglądu całej korony oraz liczbą punktów kolonizacji. 
+
+\section{Dalszy rozwój pracy}
+Program dzięki silnikowni Unit5 daje duże możliwości rozwoju. Ciągły rozwój oraz dobry kontakt użytkowników z developerami pozwalają na szybkie rozwiązywanie problemów w silniku. Jego społeczność  jest bardzo szybko rozwijającym się środowiskiem. Dzięki temu stworzenie większego projektu z dużą ilością osób jest możliwe. Prostota implementacji, opisanego tutaj rozwiązania, oraz jej klarowność stanowi o szybkim oraz prostym wdrażaniu nowych rozwiązań. 
+\addcontentsline{toc}{chapter}{Bibliografia} 
+\begin{thebibliography}{99}
+\bibitem{prusinABOP}
+Prusinkiewicz P., Lindermayer A. (2004) The Algorithmic Beauty of Plants.  wersja elektroniczna.
+\bibitem{wlosy}
+Fuhrer M. Hairs, Textures, and Shades: Improving the Realism of Plant Models Generated with L-systems. M.Sc. thesis, University of Calgary, August 2005. wersja elektroniczna
+\bibitem{sca}
+Runions A., Lane B., Prusinkiewicz P. Modeling Trees with a Space Colonization Algorithm,Department of Computer Science, University of Calgary, Canada ,Eurographics Workshop on Natural Phenomena (2007).
+\bibitem{Sub} MacMurchy P., The Use of Subdivision Surfaces in the Modeling of Plants, THE UNIVERSITY OF CALGARY, April, 2004
+\bibitem{VertexVertex} Smith C., On Vertex-Vertex Systems and Their Use in Geometric and Biological Modelling, THE UNIVERSITY OF CALGARY, April, 2006
+\bibitem{houdiniZrodlo}
+http://www.digitaltutors.com/tutorial/570-Procedural-Tree-Growth-Using-L-systems-in-Houdini
+\bibitem{speedTreeZrodlo}
+\url{http://www.speedtree.com/images/modeler_lrg.jpg}
+\bibitem{unity}\url{https://unity3d.com/5}
+\bibitem{mono}\url{http://www.mono-project.com/}
+\bibitem{splajn}\url{http://www.zobaczycmatematyke.krk.pl/025-Zolkos-Krakow/b-spline.html}
+\bibitem{treeSketch}TreeSketch:Interactive Procedural Modeling of Trees on a Tablet, Longay S.,  Runions A., Boudon F., Prusinkiewicz P.
+\bibitem{slon}\url{http://kacikzdrowia.pl/wp-content/uploads/2015/01/s%C5%82onecznikb.jpg}
+\bibitem{konw}\url{https://sadzawka.pl/Convallaria_majalis_Aurea-Konwalia_majowa}
+\bibitem{stringBuilder}\url{https://msdn.microsoft.com/pl-pl/library/system.text.stringbuilder%28v=vs.110%29.aspx}
+\bibitem{dict}\url{http://net-informations.com/faq/general/dictionary-list.htm}
+\bibitem{bezUnity}\url{https://www.assetstore.unity3d.com/en/#!/content/11278}
+\bibitem{youtube}\url{https://www.youtube.com/watch?v=o9RK6O2kOKo}
+\bibitem{unityMesh}\url{http://docs.unity3d.com/Manual/class-MeshRenderer.html}
+\bibitem{MBN}\url{http://jayelinda.com/modelling-by-numbers-part-1a/}
+
+\end{thebibliography}
+
+\addcontentsline{toc}{chapter}{Spis rysunków} 
+\listoffigures
+
+\addcontentsline{toc}{chapter}{Spis kodów programu} 
+\lstlistoflistings
+
+\listofmyequations
+\addcontentsline{toc}{chapter}{Lista równań} 
+
+\chapter*{Abstract}
+Since the beginning of computer era we are trying to imitate nature. The results of those attempts are mathematical equations describing weather, snow flakes, plant growth or influence of species in individual biomes. In computer graphics fractal structure are often used because they can be simple characterize in mathematics. Those forms are common in naure and can be found in example in broccoli, corals, lightnings or in trees. 
+Self-similar fractals can be created in computer graphics using Lindermayer Systems. This paper is created to analyze efficiency of this algorithm in modeling 3D tree triangle meshes for games. The general motivation of this topic is to produce way to procedural modeling and simplified edition of complicated 3D tree models. By combining L-systems with Bezier Curve there is a possibility to produce complicated 3D models. For example tree created with 468 branches having 87200 vertices and it is made in few seconds. In conclusion, time-consuming modeling in 3D programs can be replaced by solution described in this paper. 
+ 
+
+
+\end{sloppypar}
+\end{document}
